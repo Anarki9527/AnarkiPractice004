@@ -4,6 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.Threading;
+using UnityEngine.SceneManagement;
+
+
 
 
 
@@ -19,6 +22,7 @@ public class PlayerController : MonoBehaviour
     public static int hp = 5;
     private bool invincible = false;
     private GameObject lose;
+    private GameObject end;
     private GameObject g_Canvas;
     private Transform playerTransform;
     private GameObject restart;
@@ -29,7 +33,8 @@ public class PlayerController : MonoBehaviour
     {
         rigid2D = this.gameObject.GetComponent<Rigidbody2D>();
         sR = this.gameObject.GetComponent<SpriteRenderer>();
-        lose = Utility.AssetRelate.ResourcesLoadCheckNull<GameObject>("Prefabs/lose");
+        lose = Utility.AssetRelate.ResourcesLoadCheckNull<GameObject>("Prefabs/UI/Lose");
+        end = Utility.AssetRelate.ResourcesLoadCheckNull<GameObject>("Prefabs/UI/End");
         g_Canvas = GameObject.Find("Canvas");
         playerTransform = this.gameObject.GetComponent<Transform>();
 
@@ -65,11 +70,10 @@ public class PlayerController : MonoBehaviour
 
         if (hp == 0)
         {
-            // Destroy(this.gameObject);
             Utility.GameObjectRelate.SetObjectActiveToggle(this.gameObject);
             Utility.GameObjectRelate.InstantiateGameObject(g_Canvas, lose);
-            GameObject restart = GameObject.Find("Canvas/lose(Clone)/Restart");
-            GameObject close = GameObject.Find("Canvas/lose(Clone)/Close");
+            GameObject restart = GameObject.Find("Canvas/Lose(Clone)/Restart");
+            GameObject close = GameObject.Find("Canvas/Lose(Clone)/Close");
 
             EventTriggerListener.Get(restart).onUp += OnUp;
             EventTriggerListener.Get(close).onUp += OnUp;
@@ -95,6 +99,8 @@ public class PlayerController : MonoBehaviour
 
 
     }
+
+
 
     [Header("目前的水平速度")]
     public float speedX = 20;
@@ -198,7 +204,17 @@ public class PlayerController : MonoBehaviour
                 sR.color = new Color(1f, 1f, 1f, 0.5f);
                 Invoke("InvincibleTime", 2);
             }
+        }
+        if (other.gameObject.tag == "End" && other.gameObject.name =="End")
+        {
+            Utility.GameObjectRelate.SetObjectActiveToggle(this.gameObject);
+            Utility.GameObjectRelate.InstantiateGameObject(g_Canvas, end);
+            Destroy(other.gameObject);
+            GameObject restart = GameObject.Find("Canvas/End(Clone)/Restart");
+            GameObject close = GameObject.Find("Canvas/End(Clone)/Close");
 
+            EventTriggerListener.Get(restart).onUp += OnUp;
+            EventTriggerListener.Get(close).onUp += OnUp;
         }
 
     }
@@ -226,7 +242,11 @@ public class PlayerController : MonoBehaviour
     private void Restart()
     {
         Debug.Log("restart");
-                    // Utility.GameObjectRelate.SetObjectActiveToggle(this.gameObject);
+        SceneManager.LoadScene("GameLevel1");
+        Utility.GameObjectRelate.SetObjectActiveToggle(this.gameObject);
+        Utility.GameObjectRelate.ClearChildren(g_Canvas.GetComponent<Transform>());
+        hp = 5;
+        score = 0;
 
     }
 
