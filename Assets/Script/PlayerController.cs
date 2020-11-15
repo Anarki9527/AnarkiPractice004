@@ -7,27 +7,21 @@ using System.Threading;
 using UnityEngine.SceneManagement;
 
 
-
-
-
 // [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
 {
-    // public float speed = 0.1f;
-    private Rigidbody2D rigid2D;
-    private float speed_x_constraint = 50f;
+    #region 宣告
+    private Rigidbody2D rigid2D; 
     private SpriteRenderer sR;
-    // public int playerHP = 10;
-    public static int score = 0;
-    public static int hp = 5;
-    private bool invincible = false;
-    private GameObject lose;
-    private GameObject end;
-    private GameObject g_Canvas;
+    private bool invincible = false;  //撞到怪物後是否有無敵狀態
+    private GameObject lose;  //Lose UI
+    private GameObject end;   //End UI
+    private GameObject g_Canvas;  
     private Transform playerTransform;
     private GameObject restart;
     private GameObject close;
-
+    private bool diedyet;  //玩家是否已死亡
+    #endregion
     // Start is called before the first frame update
     void Start()
     {
@@ -38,104 +32,36 @@ public class PlayerController : MonoBehaviour
         g_Canvas = GameObject.Find("Canvas");
         playerTransform = this.gameObject.GetComponent<Transform>();
 
+        score = GameObject.Find("Canvas/PlayerUI/Score").GetComponent<Text>();
+        hp = GameObject.Find("Canvas/PlayerUI/HP").GetComponent<Text>();
+        Debug.Log("start");
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        //move
-        // if (Input.GetKey(KeyCode.RightArrow))
-        // {
-        // sR.flipX = true;
-        // rigid2D.velocity = new Vector2(speed_x_constraint, rigid2D.velocity.y);
-        // rigid2D.AddForce(new Vector2(100*speed,0),ForceMode2D.Force);
-        // this.gameObject.transform.position += new Vector3(speed, 0, 0);
-        // }
-        // if (Input.GetKey(KeyCode.LeftArrow))
-        // {
-        //     SpriteRenderer sR = this.GetComponent<SpriteRenderer>();
-        //     sR.flipX = false;
-        //     rigid2D.velocity = new Vector2(-speed_x_constraint, rigid2D.velocity.y);
-        //     // rigid2D.AddForce(new Vector2(-100*speed,0),ForceMode2D.Force);
-        //     // this.gameObject.transform.position -= new Vector3(speed, 0, 0);
-        // }
-
-        // if (Input.GetKeyDown(KeyCode.Z))
-        // {
-        //     rigid2D.AddForce(new Vector2(0, 250), ForceMode2D.Impulse);
-        // }
         MovementX();
         ControlSpeed();
         TryJump();
 
-        if (hp == 0)
+        if (playerTransform.position.y <= -10 && diedyet == false)  //掉下去
         {
-            Utility.GameObjectRelate.SetObjectActiveToggle(this.gameObject);
-            Utility.GameObjectRelate.InstantiateGameObject(g_Canvas, lose);
-            GameObject restart = GameObject.Find("Canvas/Lose(Clone)/Restart");
-            GameObject close = GameObject.Find("Canvas/Lose(Clone)/Close");
-
-            EventTriggerListener.Get(restart).onUp += OnUp;
-            EventTriggerListener.Get(close).onUp += OnUp;
-
-
+            TakeDamage(currentHealth);
+            diedyet = true;
         }
-
-        if (playerTransform.position.y <= -10)
-        {
-            hp = 0;
-        }
-
-        //速度限制
-        // if (rigid2D.velocity.x > speed_x_constraint)
-        // {
-        //     rigid2D.velocity = new Vector2(speed_x_constraint, rigid2D.velocity.y);
-        // }
-
-        // if (rigid2D.velocity.x < -speed_x_constraint)
-        // {
-        //     rigid2D.velocity = new Vector2(-speed_x_constraint, rigid2D.velocity.y);
-        // }
-
-
     }
 
 
-
-    [Header("目前的水平速度")]
-    public float speedX = 20;
-
-    [Header("目前的水平方向")]
-    public float horizontalDirection = 1;//數值會在 -1~1之間
-
-    const string HORIZONTAL = "Horizontal";
-
-    [Header("水平推力")]
-    [Range(0, 999)]
-    public float xForce = 750;
-
-    //目前垂直速度
-    float speedY;
-
-    [Header("最大水平速度")]
-    public float maxSpeedX;
-
-    [Header("垂直向上推力")]
-    public float yForce = 500;
-
-    [Header("感應地板的距離")]
-    [Range(0, 0.5f)]
-    public float distance;
-
-    [Header("偵測地板的射線起點")]
-    public Transform groundCheck;
-
-    [Header("地面圖層")]
-    public LayerMask groundLayer;
-
-    public bool grounded;
-
-    public void ControlSpeed()
+    #region 角色移動相關
+    private float speedX = 10; //目前的水平速度
+    private float horizontalDirection = 1;  //目前的水平方向 數值會在 -1~1之間
+    private float xForce = 750;  //水平推力
+    private float speedY;  //目前垂直速度
+    private float maxSpeedX = 10;  //最大水平速度
+    private float yForce = 600; //垂直向上推力
+    private bool isGround = false;  //是否踩到地面
+    private void ControlSpeed() //速度限制
     {
         speedX = rigid2D.velocity.x;
         speedY = rigid2D.velocity.y;
@@ -143,7 +69,7 @@ public class PlayerController : MonoBehaviour
         rigid2D.velocity = new Vector2(newSpeedX, speedY);
     }
 
-    public bool JumpKey
+    private bool JumpKey  //跳躍
     {
         get
         {
@@ -151,82 +77,83 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void TryJump()
+    void TryJump()  //符合條件跳躍
     {
-        // if (IsGround && JumpKey)
-        if (JumpKey)
+        if (isGround && JumpKey)
         {
             rigid2D.AddForce(Vector2.up * yForce);
         }
     }
 
-    void MovementX()
+    void MovementX()  //持續往右移動
     {
-        // horizontalDirection = Input.GetAxis(HORIZONTAL);
         rigid2D.AddForce(new Vector2(xForce * horizontalDirection, 0));
     }
+    #endregion
 
-    //在玩家的底部射一條很短的射線 如果射線有打到地板圖層的話 代表正在踩著地板
-    bool IsGround
+
+    #region isGround的設置 碰到地板就設定True 反之
+    private void OnCollisionEnter2D(Collision2D other)
     {
-        get
+        if (other.gameObject.tag == "Level")
         {
-            Vector2 start = groundCheck.position;
-            Vector2 end = new Vector2(start.x, start.y - distance);
-
-            Debug.DrawLine(start, end, Color.blue);
-            grounded = Physics2D.Linecast(start, end, groundLayer);
-            return grounded;
+            isGround = true;
+        }
+    }
+    private void OnCollisionExit2D(Collision2D other)
+    {
+        if (other.gameObject.tag == "Level")
+        {
+            isGround = false;
         }
     }
 
-
-    private void OnCollisionEnter2D(Collision2D coll)
+    private void OnCollisionStay2D(Collision2D other)
     {
-
+        if (other.gameObject.tag == "Level")
+        {
+            isGround = true;
+        }
     }
+    #endregion
 
-    /// <summary>
-    /// Sent when another object enters a trigger collider attached to this
-    /// object (2D physics only).
-    /// </summary>
-    /// <param name="other">The other Collider2D involved in this collision.</param>
+    #region Trigger碰撞器
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.gameObject.tag == "Enemy")
+        if (other.gameObject.tag == "Enemy")  //碰到敵人
         {
             if (!invincible)
             {
-                hp -= 1;
-                Debug.Log(hp);
+                TakeDamage(1);
                 invincible = true;
-                // sR.color = new Color(100f, 100f, 100f);
                 sR.color = new Color(1f, 1f, 1f, 0.5f);
                 Invoke("InvincibleTime", 2);
             }
         }
-        if (other.gameObject.tag == "End" && other.gameObject.name =="End")
-        {
-            Utility.GameObjectRelate.SetObjectActiveToggle(this.gameObject);
-            Utility.GameObjectRelate.InstantiateGameObject(g_Canvas, end);
-            Destroy(other.gameObject);
-            GameObject restart = GameObject.Find("Canvas/End(Clone)/Restart");
-            GameObject close = GameObject.Find("Canvas/End(Clone)/Close");
 
-            EventTriggerListener.Get(restart).onUp += OnUp;
-            EventTriggerListener.Get(close).onUp += OnUp;
+        if (other.gameObject.tag == "ScoreGet")
+        {
+            GetScore(10);
+            Destroy(other.gameObject);
         }
 
+        if (other.gameObject.tag == "End" && other.gameObject.name == "End")  //關卡結束
+        {
+            Gameover(end);
+            Destroy(other);
+        }
     }
+    #endregion
 
-    public void InvincibleTime()
+
+    public void InvincibleTime()  //被敵人擊中後的無敵時間
     {
         Debug.Log("2sec");
         sR.color = new Color(1f, 1f, 1f, 1f);
         invincible = false;
     }
 
-    private void OnUp(GameObject Btn)
+    private void OnUp(GameObject Btn)  //UI偵測
     {
         switch (Btn.name)
         {
@@ -239,16 +166,61 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void Restart()
+    private void Restart()   //重新開始
     {
-        Debug.Log("restart");
         SceneManager.LoadScene("GameLevel1");
-        Utility.GameObjectRelate.SetObjectActiveToggle(this.gameObject);
+        sR.enabled = true;
         Utility.GameObjectRelate.ClearChildren(g_Canvas.GetComponent<Transform>());
-        hp = 5;
-        score = 0;
+        UIManager.currentHealth = 5;
+        UIManager.currentScore = 0;
+        xForce = 750;
+        diedyet = false;
+        rigid2D.simulated = true;
+
 
     }
 
+    private void Gameover(GameObject calledUI) //遊戲結束
+    {
+        sR.enabled = false;
+        rigid2D.simulated = false;
+        Utility.GameObjectRelate.InstantiateGameObject(g_Canvas, calledUI);
+        GameObject restart = GameObject.Find("Canvas/" + calledUI.name + "(Clone)/Restart");
+        GameObject close = GameObject.Find("Canvas/" + calledUI.name + "(Clone)/Close");
 
+        EventTriggerListener.Get(restart).onUp += OnUp;
+        EventTriggerListener.Get(close).onUp += OnUp;
+    }
+
+    #region UI - 分數、血量
+    private Text score;
+    private Text hp;
+
+    private int currentHealth = 5;
+    private int currentScore = 0;
+
+    private void TakeDamage(int amount)
+    {
+        currentHealth -= amount;
+        HeatlhUpdate();
+        if (currentHealth <= 0)
+        {
+            Gameover(lose);
+        }
+
+    }
+    private void HeatlhUpdate()
+    {
+        hp.text = currentHealth.ToString();
+    }
+    private void GetScore(int amount)
+    {
+        currentScore += amount;
+        ScoreUpdate();
+    }
+    private void ScoreUpdate()
+    {
+        score.text = currentScore.ToString();
+    }
+    #endregion
 }
