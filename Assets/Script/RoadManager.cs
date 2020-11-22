@@ -31,8 +31,9 @@ public class RoadManager : MonoBehaviour
 
     public void GenerateRoad()
     {
-        int type = Random.Range(0, gameObjectDic.Count-1);
-        GameObject newRoad = Instantiate(gameObjectDic[type], new Vector2(RoadCurrent.nowRoadX + 280, 0), Quaternion.identity) as GameObject;
-        // pool.ReUse(new Vector2(RoadCurrent.nowRoadX + 280, 0));
+        // int type = Random.Range(0, gameObjectDic.Count-1);
+        // GameObject newRoad = Instantiate(gameObjectDic[type], new Vector2(RoadCurrent.nowRoadX + 280, 0), Quaternion.identity) as GameObject;
+        RoadCurrent.nowRoadX += 280;
+        pool.ReUse(new Vector2(RoadCurrent.nowRoadX, 0));
     }
 }
