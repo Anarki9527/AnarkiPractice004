@@ -11,15 +11,16 @@ using UnityEngine.SceneManagement;
 public class PlayerController : MonoBehaviour
 {
     #region 宣告
-    private Rigidbody2D rigid2D; 
+    private Rigidbody2D rigid2D;
     private SpriteRenderer sR;
     private bool invincible = false;  //撞到怪物後是否有無敵狀態
     private GameObject lose;  //Lose UI
     private GameObject end;   //End UI
-    private GameObject g_Canvas;  
+    private GameObject g_Canvas;
     private Transform playerTransform;
     private GameObject restart;
     private GameObject close;
+    private UIManager playerUI;
     private bool diedyet;  //玩家是否已死亡
     #endregion
     // Start is called before the first frame update
@@ -30,11 +31,8 @@ public class PlayerController : MonoBehaviour
         lose = Utility.AssetRelate.ResourcesLoadCheckNull<GameObject>("Prefabs/UI/Lose");
         end = Utility.AssetRelate.ResourcesLoadCheckNull<GameObject>("Prefabs/UI/End");
         g_Canvas = GameObject.Find("Canvas");
+        playerUI = this.gameObject.GetComponent<UIManager>();
         playerTransform = this.gameObject.GetComponent<Transform>();
-
-        score = GameObject.Find("Canvas/PlayerUI/Score").GetComponent<Text>();
-        hp = GameObject.Find("Canvas/PlayerUI/HP").GetComponent<Text>();
-        Debug.Log("start");
 
     }
 
@@ -47,8 +45,9 @@ public class PlayerController : MonoBehaviour
 
         if (playerTransform.position.y <= -10 && diedyet == false)  //掉下去
         {
-            TakeDamage(currentHealth);
+            playerUI.TakeDamage(playerUI.currentHealth);
             diedyet = true;
+            Gameover(lose);
         }
     }
 
@@ -59,7 +58,7 @@ public class PlayerController : MonoBehaviour
     private float xForce = 750;  //水平推力
     private float speedY;  //目前垂直速度
     private float maxSpeedX = 10;  //最大水平速度
-    private float yForce = 600; //垂直向上推力
+    private float yForce = 700; //垂直向上推力
     private bool isGround = false;  //是否踩到地面
     private void ControlSpeed() //速度限制
     {
@@ -124,7 +123,12 @@ public class PlayerController : MonoBehaviour
         {
             if (!invincible)
             {
-                TakeDamage(1);
+                playerUI.TakeDamage(1);
+                if (playerUI.currentHealth <= 0)
+                {
+                    Gameover(lose);
+                    return;
+                }
                 invincible = true;
                 sR.color = new Color(1f, 1f, 1f, 0.5f);
                 Invoke("InvincibleTime", 2);
@@ -133,7 +137,7 @@ public class PlayerController : MonoBehaviour
 
         if (other.gameObject.tag == "ScoreGet")
         {
-            GetScore(10);
+            playerUI.GetScore(10);
             Destroy(other.gameObject);
         }
 
@@ -148,7 +152,6 @@ public class PlayerController : MonoBehaviour
 
     public void InvincibleTime()  //被敵人擊中後的無敵時間
     {
-        Debug.Log("2sec");
         sR.color = new Color(1f, 1f, 1f, 1f);
         invincible = false;
     }
@@ -171,8 +174,8 @@ public class PlayerController : MonoBehaviour
         SceneManager.LoadScene("GameLevel1");
         sR.enabled = true;
         Utility.GameObjectRelate.ClearChildren(g_Canvas.GetComponent<Transform>());
-        UIManager.currentHealth = 5;
-        UIManager.currentScore = 0;
+        playerUI.currentHealth = 5;
+        playerUI.currentScore = 0;
         xForce = 750;
         diedyet = false;
         rigid2D.simulated = true;
@@ -192,35 +195,4 @@ public class PlayerController : MonoBehaviour
         EventTriggerListener.Get(close).onUp += OnUp;
     }
 
-    #region UI - 分數、血量
-    private Text score;
-    private Text hp;
-
-    private int currentHealth = 5;
-    private int currentScore = 0;
-
-    private void TakeDamage(int amount)
-    {
-        currentHealth -= amount;
-        HeatlhUpdate();
-        if (currentHealth <= 0)
-        {
-            Gameover(lose);
-        }
-
-    }
-    private void HeatlhUpdate()
-    {
-        hp.text = currentHealth.ToString();
-    }
-    private void GetScore(int amount)
-    {
-        currentScore += amount;
-        ScoreUpdate();
-    }
-    private void ScoreUpdate()
-    {
-        score.text = currentScore.ToString();
-    }
-    #endregion
 }
