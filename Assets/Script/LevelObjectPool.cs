@@ -4,9 +4,8 @@ using UnityEngine;
 
 public class LevelObjectPool : MonoBehaviour
 {
-    // public GameObject prefab;
     public GameObject[] levelPrafabs;
-    private int initailSize = 9;
+    private int initailSize = 3;
 
     private Queue<GameObject> m_pool = new Queue<GameObject>();
 
@@ -26,16 +25,14 @@ public class LevelObjectPool : MonoBehaviour
         {
             GameObject reuse = m_pool.Dequeue();
             reuse.transform.position = position;
-            // reuse.transform.rotation = rotation;
             reuse.SetActive(true);
         }
-        // else
-        // {
-        //     int type = Random.Range(0, levelPrafabs.Length);
-        //     GameObject go = Instantiate(levelPrafabs[type]) as GameObject;
-        //     go.transform.position = position;
-        //     // go.transform.rotation = rotation;
-        // }
+        else
+        {
+            int type = Random.Range(0, levelPrafabs.Length);
+            GameObject go = Instantiate(levelPrafabs[type]) as GameObject;
+            go.transform.position = position;
+        }
     }
 
 
