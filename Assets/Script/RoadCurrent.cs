@@ -45,7 +45,7 @@ public class RoadCurrent : MonoBehaviour
 
     public void RoadRecovery()
     {
-
+Debug.Log("go");
         pool.Recovery(waitToDeleteLevel);
     }
 }
