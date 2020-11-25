@@ -22,6 +22,8 @@ public class PlayerController : MonoBehaviour
     private GameObject close;
     private UIManager playerUI;
     private bool diedyet;  //玩家是否已死亡
+    private ObjectPool pool;
+
     #endregion
     // Start is called before the first frame update
     void Start()
@@ -33,7 +35,7 @@ public class PlayerController : MonoBehaviour
         g_Canvas = GameObject.Find("Canvas");
         playerUI = this.gameObject.GetComponent<UIManager>();
         playerTransform = this.gameObject.GetComponent<Transform>();
-
+        pool = GameObject.Find("ObjectPool").GetComponent<ObjectPool>();
     }
 
     // Update is called once per frame
@@ -135,10 +137,10 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        if (other.gameObject.tag == "ScoreGet")
+        if (this.gameObject.name == "Player" && other.gameObject.tag == "ScoreGet")
         {
             playerUI.GetScore(10);
-            Destroy(other.gameObject);
+            pool.RecycleObj(other.gameObject);
         }
 
         if (other.gameObject.tag == "End" && other.gameObject.name == "End")  //關卡結束
