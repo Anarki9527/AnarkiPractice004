@@ -9,6 +9,7 @@ public class LevelChecker : MonoBehaviour
     private List<Transform> listT = new List<Transform>();
     private List<Transform> listM = new List<Transform>();
     private ObjectPool pool;
+    private Transform[] searchArry;
 
     private void Awake()
     {
@@ -26,6 +27,7 @@ public class LevelChecker : MonoBehaviour
             {
                 GameObject toast = pool.GetObj("Toast1", v.transform.position, v.transform.rotation);
                 toast.transform.SetParent(parentLevel.transform);
+
             }
             listM = Utility.GameObjectRelate.SearchChildsPartName(parentLevel.transform, "MinionSpawnTrigger");
             foreach (var v in listM)
@@ -38,19 +40,23 @@ public class LevelChecker : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        listM.Clear();
+        listT.Clear();
         if (other.gameObject.tag == "Player")
         {
             if (RoadCurrent.waitToDeleteLevel != null)
             {
-                listT = Utility.GameObjectRelate.SearchChildsPartName(RoadCurrent.waitToDeleteLevel.transform, "Toast1");
-                foreach (var v in listT)
+                searchArry = RoadCurrent.waitToDeleteLevel.GetComponentsInChildren<Transform>();
+                foreach (var child in searchArry)
                 {
-                    pool.RecycleObj(v.gameObject);
-                }
-                listM = Utility.GameObjectRelate.SearchChildsPartName(RoadCurrent.waitToDeleteLevel.transform, "Minion1");
-                foreach (var v in listM)
-                {
-                    pool.RecycleObj(v.gameObject);
+                    if (child.gameObject.name == "Toast1")
+                    {
+                        pool.RecycleObj(child.gameObject);
+                    }
+                    if (child.gameObject.name == "Minion1")
+                    {
+                        pool.RecycleObj(child.gameObject);
+                    }
                 }
                 parentLevelRC.RoadRecovery();
             }

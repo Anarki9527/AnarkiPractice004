@@ -15,11 +15,6 @@ public class RoadCurrent : MonoBehaviour
         pool = GameObject.Find("LevelObjectPool").GetComponent<LevelObjectPool>();
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        Debug.Log(other.name);
-    }
-
     public void RoadLoad()
     {
         waitToDeleteLevel = this.gameObject;  //在載入新關卡的同時，記錄自己為待刪除物件。

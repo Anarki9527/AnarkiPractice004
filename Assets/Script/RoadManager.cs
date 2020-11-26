@@ -23,6 +23,11 @@ public class RoadManager : MonoBehaviour
 
     }
 
+    private void Start() 
+    {
+        GameObject newRoad = LevelPool.ReUse(new Vector2(RoadCurrent.nowRoadX, 0));
+    }
+
     public void GenerateRoad()
     {
         RoadCurrent.nowRoadX += 280;

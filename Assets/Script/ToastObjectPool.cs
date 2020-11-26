@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class LevelObjectPool : MonoBehaviour
+public class ToastObjectPool : MonoBehaviour
 {
-    public GameObject[] levelPrafabs;
-    private int initailSize = 3;
+    public GameObject Prafabs;
+    private int initailSize = 80;
 
     private Queue<GameObject> m_pool = new Queue<GameObject>();
 
@@ -13,8 +13,9 @@ public class LevelObjectPool : MonoBehaviour
     {
         for (int cnt = 0; cnt < initailSize; cnt++)
         {
-            GameObject go = Instantiate(levelPrafabs[cnt]) as GameObject;
-            go.name = levelPrafabs[cnt].name;
+            GameObject go = Instantiate(Prafabs) as GameObject;
+            go.name = Prafabs.name;
+            go.transform.SetParent(this.gameObject.transform);
             m_pool.Enqueue(go); go.SetActive(false);
         }
     }
@@ -30,8 +31,8 @@ public class LevelObjectPool : MonoBehaviour
         }
         else
         {
-            int type = Random.Range(0, levelPrafabs.Length);
-            GameObject go = Instantiate(levelPrafabs[type]) as GameObject;
+            GameObject go = Instantiate(Prafabs) as GameObject;
+            go.name = Prafabs.name;
             go.transform.position = position;
             return go;
         }

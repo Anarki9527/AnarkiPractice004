@@ -7,7 +7,7 @@ public class UIManager : MonoBehaviour
 {
     private Text score;
     private Text hp;
-    public int currentHealth = 5;
+    public int currentHealth = 10;
     public int currentScore = 0;
     // Start is called before the first frame update
     void Start()

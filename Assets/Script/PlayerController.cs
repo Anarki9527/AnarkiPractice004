@@ -176,7 +176,7 @@ public class PlayerController : MonoBehaviour
         SceneManager.LoadScene("GameLevel1");
         sR.enabled = true;
         Utility.GameObjectRelate.ClearChildren(g_Canvas.GetComponent<Transform>());
-        playerUI.currentHealth = 5;
+        playerUI.currentHealth = 10;
         playerUI.currentScore = 0;
         xForce = 750;
         diedyet = false;
