@@ -166,7 +166,7 @@ public class PlayerController : MonoBehaviour
                 Restart();
                 break;
             case "Close":
-                Application.Quit();
+                SceneManager.LoadScene("Menu");
                 break;
         }
     }
